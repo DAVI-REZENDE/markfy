@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: markfy-postgres-staging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-markfy_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-markfy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    networks:
+      - markfy-network-staging
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: markfy-backend-staging
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: staging
+      PORT: 4001
+    ports:
+      - "4001:4000"
+    depends_on:
+      - postgres
+    networks:
+      - markfy-network-staging
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: markfy-frontend-staging
+    environment:
+      NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    networks:
+      - markfy-network-staging
+    restart: unless-stopped
+
+volumes:
+  postgres_data_staging:
+
+networks:
+  markfy-network-staging:
+    driver: bridge

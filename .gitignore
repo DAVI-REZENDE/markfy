@@ -1,0 +1,6 @@
+node_modules
+vercel-postgres-setup.md
+DEPLOY_VERCEL.md
+deploy-vercel.sh
+migrate.sh
+DEPLOY_VERCEL.md
