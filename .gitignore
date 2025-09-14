@@ -117,3 +117,5 @@ DEPLOY_VERCEL.md
 deploy-vercel.sh
 migrate.sh
 setup.sh
+
+DEPLOY_VERCEL.md
