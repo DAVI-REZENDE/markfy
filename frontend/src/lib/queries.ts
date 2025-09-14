@@ -11,6 +11,42 @@ export const GET_ME = gql`
   }
 `
 
+export const LOGIN = gql`
+  mutation Login($input: LoginInput!) {
+    login(input: $input) {
+      user {
+        id
+        name
+        email
+        createdAt
+      }
+      success
+    }
+  }
+`
+
+export const REGISTER = gql`
+  mutation Register($input: RegisterInput!) {
+    register(input: $input) {
+      user {
+        id
+        name
+        email
+        createdAt
+      }
+      success
+    }
+  }
+`
+
+export const LOGOUT = gql`
+  mutation Logout {
+    logout {
+      success
+    }
+  }
+`
+
 export const GET_POST_BY_SLUG = gql`
   query GetPostBySlug($slug: String!) {
     post(slug: $slug) {

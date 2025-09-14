@@ -4,24 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAuth } from '@/hooks/useAuth'
-import { gql, useMutation } from '@apollo/client'
+import { useAuth } from '@/contexts/AuthContext'
+import { REGISTER } from '@/lib/queries'
+import { useMutation } from '@apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-const REGISTER_MUTATION = gql`
-  mutation Register($input: RegisterInput!) {
-    register(input: $input) {
-      user {
-        id
-        name
-        email
-      }
-      token
-    }
-  }
-`
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
@@ -33,7 +21,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const { login: authLogin, isAuthenticated, isLoading: authLoading } = useAuth()
 
-  const [register] = useMutation(REGISTER_MUTATION)
+  const [register] = useMutation(REGISTER)
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
@@ -66,11 +54,14 @@ export default function RegisterPage() {
         }
       })
 
-      // Usar o hook de autenticação para salvar o token
-      authLogin(data.register.token)
-      
-      // Redirecionar para dashboard
-      router.push('/dashboard')
+      if (data.register.success) {
+        // O cookie HTTP-only já foi definido pelo backend
+        // Apenas atualizamos o estado local
+        authLogin(data.register.user)
+        
+        // Redirecionar para dashboard
+        router.push('/dashboard')
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao criar conta')
     } finally {

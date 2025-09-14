@@ -8,7 +8,11 @@ export const userTypeDefs = `
 
   type AuthPayload {
     user: User!
-    token: String!
+    success: Boolean!
+  }
+
+  type LogoutPayload {
+    success: Boolean!
   }
 
   input RegisterInput {
@@ -29,5 +33,6 @@ export const userTypeDefs = `
   type Mutation {
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
+    logout: LogoutPayload!
   }
 `

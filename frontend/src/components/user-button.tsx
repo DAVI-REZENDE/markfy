@@ -1,15 +1,15 @@
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/contexts/AuthContext"
 import { LogIn, LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Button } from "./ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 
 export function UserButton() {

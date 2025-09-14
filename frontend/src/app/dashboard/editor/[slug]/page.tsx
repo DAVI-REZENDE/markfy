@@ -3,16 +3,16 @@
 import { Alert } from '@/components/alert'
 import { EditorHeader } from '@/components/editor-header'
 import { LoadingSpinner } from '@/components/loading-spinner'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import {
-  createContentWithTitle,
-  extractContentWithoutTitle,
-  extractTitleFromContent
+    createContentWithTitle,
+    extractContentWithoutTitle,
+    extractTitleFromContent
 } from '@/lib/editor-utils'
 import {
-  CREATE_POST,
-  GET_POST_BY_SLUG,
-  UPDATE_POST
+    CREATE_POST,
+    GET_POST_BY_SLUG,
+    UPDATE_POST
 } from '@/lib/queries'
 import { useMutation, useQuery } from '@apollo/client'
 import dynamic from 'next/dynamic'

@@ -3,10 +3,10 @@
 import { Alert } from '@/components/alert'
 import { EditorHeader } from '@/components/editor-header'
 import { LoadingSpinner } from '@/components/loading-spinner'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import {
-  extractContentWithoutTitle,
-  extractTitleFromContent
+    extractContentWithoutTitle,
+    extractTitleFromContent
 } from '@/lib/editor-utils'
 import { CREATE_POST } from '@/lib/queries'
 import { useMutation } from '@apollo/client'

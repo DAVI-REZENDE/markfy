@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc --build",
     "start": "node dist/index.js",
+    "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
@@ -23,10 +24,11 @@
   "dependencies": {
     "@apollo/server": "^4.9.5",
     "@as-integrations/fastify": "^1.0.0",
-    "@as-integrations/next": "^1.0.0",
     "@fastify/cookie": "^8.3.0",
     "@fastify/cors": "^8.4.0",
+    "@fastify/formbody": "^7.4.0",
     "@fastify/jwt": "^7.2.4",
+    "@fastify/accepts": "^5.0.2",
     "@graphql-tools/merge": "^9.1.1",
     "@graphql-tools/schema": "^10.0.25",
     "@prisma/client": "6.16.1",
@@ -35,7 +37,6 @@
     "graphql": "16.11.0",
     "graphql-tag": "2.12.6",
     "jsonwebtoken": "9.0.2",
-    "next": "^15.5.3",
     "prisma": "6.16.1"
   },
   "devDependencies": {

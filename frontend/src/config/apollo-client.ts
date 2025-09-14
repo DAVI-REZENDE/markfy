@@ -5,11 +5,15 @@ import { onError } from '@apollo/client/link/error'
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql',
   credentials: 'include', // Incluir cookies nas requisições
+  headers: {
+    'Content-Type': 'application/json',
+  }
 })
 
 const authLink = setContext((_, { headers }) => {
-  // Como o backend prioriza cookies, não precisamos enviar no header
-  // O token já está no cookie e será enviado automaticamente
+  // As credenciais (cookies) são enviadas automaticamente com credentials: 'include'
+  // Não precisamos adicionar headers de autorização manualmente
+  console.log('Apollo Client - Making request with headers:', headers)
   return {
     headers: {
       ...headers,
@@ -25,10 +29,10 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       )
       
-      // Se for erro de autenticação, limpar token e redirecionar
-      if (message.includes('Unauthorized') || message.includes('authentication')) {
+      // Se for erro de autenticação, redirecionar para login
+      // O cookie HTTP-only será gerenciado pelo backend
+      if (message.includes('Não autenticado') || message.includes('authentication')) {
         if (typeof window !== 'undefined') {
-          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
           window.location.href = '/login'
         }
       }
@@ -63,7 +67,6 @@ export const apolloClient = new ApolloClient({
     },
     query: {
       errorPolicy: 'all',
-      fetchPolicy: 'cache-and-network',
     },
   },
 })

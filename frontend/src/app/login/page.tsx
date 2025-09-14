@@ -4,24 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAuth } from '@/hooks/useAuth'
-import { gql, useMutation } from '@apollo/client'
+import { useAuth } from '@/contexts/AuthContext'
+import { LOGIN } from '@/lib/queries'
+import { useMutation } from '@apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-const LOGIN_MUTATION = gql`
-  mutation Login($input: LoginInput!) {
-    login(input: $input) {
-      user {
-        id
-        name
-        email
-      }
-      token
-    }
-  }
-`
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -29,16 +17,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { login: authLogin, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { login: authLogin, isAuthenticated, refetchUser } = useAuth()
 
-  const [login] = useMutation(LOGIN_MUTATION)
+  const [login] = useMutation(LOGIN)
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
+    if (isAuthenticated) {
       router.push('/dashboard')
     }
-  }, [isAuthenticated, authLoading, router])
+  }, [isAuthenticated, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,11 +40,14 @@ export default function LoginPage() {
         }
       })
 
-      // Usar o hook de autenticação para salvar o token
-      authLogin(data.login.token)
-      
-      // Redirecionar para dashboard
-      router.push('/dashboard')
+      if (data.login.success) {
+        // O cookie HTTP-only já foi definido pelo backend
+        // Aguardar o refetch dos dados do usuário
+        await refetchUser()
+        
+        // Redirecionar para dashboard
+        router.push('/dashboard')
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login')
     } finally {
@@ -64,15 +55,17 @@ export default function LoginPage() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verificando autenticação...</p>
-        </div>
-      </div>
-    )
+  const testAuth = async () => {
+    try {
+      console.log('Testing auth endpoint...')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL?.replace('/graphql', '')}/test-auth`, {
+        credentials: 'include'
+      })
+      const data = await response.json()
+      console.log('Test auth response:', data)
+    } catch (error) {
+      console.error('Test auth error:', error)
+    }
   }
 
   return (
@@ -118,6 +111,9 @@ export default function LoginPage() {
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Entrando...' : 'Entrar'}
+            </Button>
+            <Button type="button" variant="outline" className="w-full mt-2" onClick={testAuth}>
+              Testar Auth
             </Button>
           </form>
           <div className="mt-6 text-center">

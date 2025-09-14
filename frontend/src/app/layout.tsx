@@ -1,4 +1,5 @@
 import { ApolloWrapper } from '@/components/apollo-wrapper'
+import { AuthProvider } from '@/contexts/AuthContext'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -19,7 +20,9 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <ApolloWrapper>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ApolloWrapper>
       </body>
     </html>

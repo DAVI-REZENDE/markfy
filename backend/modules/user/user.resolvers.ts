@@ -4,15 +4,15 @@ import { prisma } from '../../core/db'
 
 export const userResolvers = {
   Query: {
-    me: async (_: any, __: any, context: any) => {
-      const { user } = context || {}
-      if (!user || !user.userId) {
+    me: async (_: any, __: any, context: { user: { userId: string } }) => {
+      // console.log('user', context)
+      const { user } = context
+      if (!user) {
         return null
       }
       
-      // Buscar usuário completo do banco de dados
       const fullUser = await prisma.user.findUnique({
-        where: { id: user.userId },
+        where: { id: context.user.userId },
         select: {
           id: true,
           name: true,
@@ -25,7 +25,6 @@ export const userResolvers = {
         return null
       }
       
-      // Converter createdAt para string
       return {
         ...fullUser,
         createdAt: fullUser.createdAt.toISOString()
@@ -34,7 +33,7 @@ export const userResolvers = {
   },
 
   Mutation: {
-    register: async (_: any, { input }: { input: { name: string; email: string; password: string } }) => {
+    register: async (_: any, { input }: { input: { name: string; email: string; password: string } }, { reply }: { reply: any }) => {
       const { name, email, password } = input
 
       // Verificar se usuário já existe
@@ -65,6 +64,16 @@ export const userResolvers = {
         { expiresIn: '7d' }
       )
 
+      // Definir cookie HTTP-only seguro
+      reply.setCookie('token', token, {
+        httpOnly: true,
+        secure: false, // Mudado para false para desenvolvimento local
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+        path: '/'
+        // Removido domain para desenvolvimento local
+      })
+
       return {
         user: {
           id: user.id,
@@ -72,12 +81,14 @@ export const userResolvers = {
           email: user.email,
           createdAt: user.createdAt.toISOString()
         },
-        token
+        success: true
       }
     },
 
-    login: async (_: any, { input }: { input: { email: string; password: string } }) => {
+    login: async (_: any, { input }: { input: { email: string; password: string } }, { reply }: { reply: any }) => {
       const { email, password } = input
+
+      console.log('LOGIN - Starting login process for:', email)
 
       // Buscar usuário
       const user = await prisma.user.findUnique({
@@ -85,6 +96,7 @@ export const userResolvers = {
       })
 
       if (!user) {
+        console.log('LOGIN - User not found for email:', email)
         throw new Error('Credenciais inválidas')
       }
 
@@ -92,6 +104,7 @@ export const userResolvers = {
       const isValidPassword = await bcrypt.compare(password, user.password)
 
       if (!isValidPassword) {
+        console.log('LOGIN - Invalid password for user:', email)
         throw new Error('Credenciais inválidas')
       }
 
@@ -102,6 +115,24 @@ export const userResolvers = {
         { expiresIn: '7d' }
       )
 
+      console.log('LOGIN - Token generated:', {
+        token: token.substring(0, 20) + '...',
+        userId: user.id,
+        email: user.email
+      })
+
+      // Definir cookie HTTP-only seguro
+      reply.setCookie('token', token, {
+        httpOnly: true,
+        secure: false, // Mudado para false para desenvolvimento local
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+        path: '/'
+        // Removido domain para desenvolvimento local
+      })
+      
+      console.log('LOGIN - Cookie set successfully')
+
       return {
         user: {
           id: user.id,
@@ -109,7 +140,22 @@ export const userResolvers = {
           email: user.email,
           createdAt: user.createdAt.toISOString()
         },
-        token
+        success: true
+      }
+    },
+
+    logout: async (_: any, __: any, { reply }: { reply: any }) => {
+      // Limpar cookie HTTP-only
+      reply.clearCookie('token', {
+        httpOnly: true,
+        secure: false, // Mudado para false para desenvolvimento local
+        sameSite: 'lax',
+        path: '/'
+        // Removido domain para desenvolvimento local
+      })
+
+      return {
+        success: true
       }
     }
   }
