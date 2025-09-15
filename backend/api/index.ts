@@ -228,8 +228,7 @@ export default async function handler(req: any, res: any) {
       method: req.method,
       url: req.url,
       headers: req.headers,
-      payload: req.body,
-      cookies: req.headers.cookie
+      payload: req.body
     })
     
     // Set headers from response
